@@ -1,0 +1,6 @@
+{"4f75c8a4-9279-4281-b1c8-627a9a8475c0 - request":{"timestamp":"2024-07-21T14:04:24.419Z","method":"GET","url":"/users/","body":{}}}
+{"4f75c8a4-9279-4281-b1c8-627a9a8475c0 - response":{"timestamp":"2024-07-21T14:04:32.025Z","method":"GET","url":"/users/","body":{}}}
+{"49fc55c2-a8a1-4ba7-b135-c77de2f52d4d - request":{"timestamp":"2024-07-21T14:04:42.647Z","method":"GET","url":"/users/","body":{}}}
+{"49fc55c2-a8a1-4ba7-b135-c77de2f52d4d - response":{"timestamp":"2024-07-21T14:04:54.686Z","method":"GET","url":"/users/","body":{}}}
+{"e32d32c4-dfa0-4c33-9276-702415524820 - request":{"timestamp":"2024-07-21T14:05:15.344Z","method":"GET","url":"/users/","body":{}}}
+{"e32d32c4-dfa0-4c33-9276-702415524820 - response":{"timestamp":"2024-07-21T14:05:20.966Z","method":"GET","url":"/users/","body":{},"response":{"name":"varsha","email":"123@gmail.com","password":"123456"}}}
