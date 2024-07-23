@@ -1,7 +1,8 @@
 const { default: mongoose } = require("mongoose");
 const RestAPI = require("../axios");
 const User = require("../model/user_model");
-const { generateFromEmail, generateUsername } = require("unique-username-generator");
+const { generateUsername } = require("unique-username-generator");
+const ErrorHandler = require('../error_handler')
 
 
 
@@ -9,10 +10,9 @@ const GetUser = async (req, res, next) => {
     const url = req.originalUrl;
     try {
         RestAPI.get(url);
-        return res.send({ "name": "varsha", "email": "123@gmail.com", "password": "123456" });
-
+        return ErrorHandler.success(res, 200, { "name": "varsha", "email": "123@gmail.com", "password": "123456" });
     } catch (error) {
-        res.status(500).send("something went wrong");
+        ErrorHandler.error();
     }
 };
 
@@ -28,9 +28,10 @@ const UserSignIn = (req, res) => {
         }).catch((error) => {
             console.error("error creating user:", error);
         });
-        return res.json({ "Success": req.body.name });
+        return ErrorHandler.success(res, 200, { "Success": req.body.name });
+
     } catch (error) {
-        res.status(500).send("something went wrong");
+        ErrorHandler.error();
 
     }
 }
@@ -44,6 +45,7 @@ const UserLogIn = (req, res) => {
         const user = User.findOne({ email, password });
         console.log(user);
     } catch (error) {
+        ErrorHandler.error();
 
     }
 }
@@ -58,47 +60,37 @@ const RandomUserAdded = async (req, res) => {
             const phoneNumber = `${index}${index}${index + 1}${index + 2}${index}${index + 1}${index + 2}${index}${index + 1}${index + 2}`;
             const newUser = User({ name, email, password, age, phoneNumber });
             await newUser.save();
-
-            // .then(() => {
-            //     console.log('user created');
-            // }).catch((error) => {
-            //     console.error("error creating user:", error);
-            // });
         }
-        return res.json({ "Success": req.body.name });
+        return ErrorHandler.success(res, 200, { "Success": true });
     } catch (error) {
-        res.status(500).send("something went wrong");
-
-
+        ErrorHandler.error();
     }
 }
 
 const GetQueryBasedField = async (req, res) => {
     try {
-        const data =await User.find({}, req.body).limit(10);
+        const data = await User.find({}, req.body).limit(10);
         const modifiedData = data.map(e => {
             const obj = e.toObject();
             obj.link = `http://localhost:2001/users/${obj._id}`;
             return obj;
         });
-        return res.json(modifiedData);
+        return ErrorHandler.success(res, 200, { "data": modifiedData });
     } catch (error) {
-        res.status(500).send("something went wrong");
-
+        ErrorHandler.error();
     }
 }
 
 const GetParticularUserData = async (req, res) => {
     try {
-       const data =await User.findOne({"_id": new mongoose.Types.ObjectId(req.params.id)});
-       console.log(data.toObject());
-       return res.json(data);
+        const data = await User.findOne({ "_id": new mongoose.Types.ObjectId(req.params.id) });
+        console.log(data.toObject());
+        return ErrorHandler.success(res, 200, data);
     } catch (error) {
-        res.status(500).send("something went wrong");
-
+        ErrorHandler.error();
     }
 }
 
 
 
-module.exports = { GetUser, UserSignIn, UserLogIn, RandomUserAdded, GetQueryBasedField,GetParticularUserData };
+module.exports = { GetUser, UserSignIn, UserLogIn, RandomUserAdded, GetQueryBasedField, GetParticularUserData };

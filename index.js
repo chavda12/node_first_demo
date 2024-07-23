@@ -1,13 +1,13 @@
 const express = require("express");
 const app = express();
-const PORT = '2001';
-const RestAPI = require("./axios");
 const LoggerMiddleware = require('./middleware/logger_text');
 const router = require("./router/user_router");
 const { connectToMongoDB } = require('./connect')
+const PORT = process.env.PORT;
 
 
-connectToMongoDB('mongodb://localhost:27017/node-demo-first').then(() => console.log("mongodb connect"));
+const mongoURL = process.env.MONGODB_URI;
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -15,6 +15,9 @@ app.use(LoggerMiddleware.requestMiddleware);
 app.use(LoggerMiddleware.responseMiddleware);
 app.use('/users', router);
 
-app.listen(PORT, () => console.log('Start server `${PORT}`'));
+connectToMongoDB(mongoURL).then(() => app.listen(PORT, () => console.log('Start server `${PORT}`')));
+
+
+
 
 
