@@ -2,53 +2,35 @@ const { default: mongoose } = require("mongoose");
 const RestAPI = require("../axios");
 const User = require("../model/user_model");
 const { generateUsername } = require("unique-username-generator");
-const ErrorHandler = require('../error_handler')
+const SuccessHandler = require('../response_handler');
+const CommonError = require('../error');
 
 
 
-const GetUser = async (req, res, next) => {
-    const url = req.originalUrl;
+const GetAllUser = async (req, res, _) => {
     try {
-        RestAPI.get(url);
-        return ErrorHandler.success(res, 200, { "name": "varsha", "email": "123@gmail.com", "password": "123456" });
+        const data = await User.find({}, req.body);
+        console.log(data.map(e => {
+            const obj = e.toObject();
+            return obj;
+        }));
+        return SuccessHandler.success(res, CommonError.Success, data);
     } catch (error) {
-        ErrorHandler.error();
+        SuccessHandler.error(res);
     }
 };
 
-const UserSignIn = (req, res) => {
+const UpdateUser = async (req, res, next) => {
+    const url = req.body;
     try {
-
-        const data = req.body;
-        const url = req.originalUrl;
-        RestAPI.post({ url, data });
-        const newUser = User({ name: data.name, email: data.email, password: data.password });
-        newUser.save().then(() => {
-            console.log('user created');
-        }).catch((error) => {
-            console.error("error creating user:", error);
-        });
-        return ErrorHandler.success(res, 200, { "Success": req.body.name });
-
+        RestAPI.get(url);
+        return SuccessHandler.success(res, CommonError.Success, { "name": "varsha", "email": "123@gmail.com", "password": "123456" });
     } catch (error) {
-        ErrorHandler.error();
-
+        SuccessHandler.error(res);
     }
-}
+};
 
-const UserLogIn = (req, res) => {
-    try {
-        const data = req.body;
-        const url = req.originalUrl;
-        const { email, password } = req.body;
-        RestAPI.post({ url, data });
-        const user = User.findOne({ email, password });
-        console.log(user);
-    } catch (error) {
-        ErrorHandler.error();
 
-    }
-}
 
 const RandomUserAdded = async (req, res) => {
     try {
@@ -61,11 +43,13 @@ const RandomUserAdded = async (req, res) => {
             const newUser = User({ name, email, password, age, phoneNumber });
             await newUser.save();
         }
-        return ErrorHandler.success(res, 200, { "Success": true });
+        return SuccessHandler.success(res, CommonError.Success, { "Success": true });
     } catch (error) {
-        ErrorHandler.error();
+        SuccessHandler.error(res);
     }
 }
+
+
 
 const GetQueryBasedField = async (req, res) => {
     try {
@@ -75,9 +59,9 @@ const GetQueryBasedField = async (req, res) => {
             obj.link = `http://localhost:2001/users/${obj._id}`;
             return obj;
         });
-        return ErrorHandler.success(res, 200, { "data": modifiedData });
+        return SuccessHandler.success(res, CommonError.Success, { "data": modifiedData });
     } catch (error) {
-        ErrorHandler.error();
+        SuccessHandler.error();
     }
 }
 
@@ -85,12 +69,25 @@ const GetParticularUserData = async (req, res) => {
     try {
         const data = await User.findOne({ "_id": new mongoose.Types.ObjectId(req.params.id) });
         console.log(data.toObject());
-        return ErrorHandler.success(res, 200, data);
+        return SuccessHandler.success(res, CommonError.Success, data);
     } catch (error) {
-        ErrorHandler.error();
+        SuccessHandler.error();
+    }
+}
+
+const UpdateParticularUserData = async (req, res) => {
+    try {
+        const data = await User.findByIdAndUpdate({ "_id": new mongoose.Types.ObjectId(req.params.id) },
+            { $set: req.body });
+        const response = await User.findById({ "_id": new mongoose.Types.ObjectId(req.params.id) });
+        console.log(response);
+        return SuccessHandler.success(res, CommonError.Success, response);
+    } catch (error) {
+        SuccessHandler.error();
     }
 }
 
 
 
-module.exports = { GetUser, UserSignIn, UserLogIn, RandomUserAdded, GetQueryBasedField, GetParticularUserData };
+
+module.exports = { GetAllUser, RandomUserAdded, GetQueryBasedField, GetParticularUserData, UpdateUser, UpdateParticularUserData };
