@@ -1,5 +1,5 @@
 const User = require("../model/user_model");
-const SuccessHandler = require('../response_handler');
+const ResponseHandler = require('../response_handler');
 const CommonError = require('../error');
 const RestAPI = require("../axios");
 const bcrypt = require('bcrypt');
@@ -21,7 +21,7 @@ const UserSignIn = async (req, res) => {
         }
 
         if (missingFieldList.length > 0)
-            return SuccessHandler.error(res, `Missing required field: ${missingFieldList.join(', ')}`, CommonError.Bad_Request);
+            return ResponseHandler.error(res, `Missing required field: ${missingFieldList.join(', ')}`, CommonError.Bad_Request);
 
         const password = await bcrypt.hash(data.password, 10); // 10 is the salt rounds
 
@@ -33,27 +33,37 @@ const UserSignIn = async (req, res) => {
         }).catch((error) => {
             console.error("error creating user:", error);
         });
-        return SuccessHandler.success(res, CommonError.Success);
+        return ResponseHandler.success(res, newUser);
 
     } catch (error) {
-        SuccessHandler.error(res);
+        ResponseHandler.error(res);
     }
 }
 
 const UserLogIn = async (req, res) => {
     try {
         const { email, password } = req.body;
-        if (!email && !password) return SuccessHandler.error(res, `Missing required field: email , password`, CommonError.Bad_Request);
-        else if (!email) return SuccessHandler.error(res, `Missing required field: email`, CommonError.Bad_Request);
-        else if (!password) return SuccessHandler.error(res, `Missing required field: password`, CommonError.Bad_Request);
-        const user = await User.findOne({ email, password });
-        if (user == null) {
-            return SuccessHandler.error(res, "please send valid credentials", CommonError.Bad_Request,);
+        const plainTextPassword = password;
+        // const isMatch = await bcrypt.compare(plainTextPassword,);
+
+        if (!email && !password) return ResponseHandler.error(res, `Missing required field: email , password`, CommonError.Bad_Request);
+        else if (!email) return ResponseHandler.error(res, `Missing required field: email`, CommonError.Bad_Request);
+        else if (!password) return ResponseHandler.error(res, `Missing required field: password`, CommonError.Bad_Request);
+        const user = await User.findOne({ email });
+        if (!user) {
+            return ResponseHandler.error(res, "Invalid Credentials", CommonError.Bad_Request);
         }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return ResponseHandler.error(res, "Invalid Credentials", CommonError.Bad_Request);
+        }
+
         console.log(user.toObject());
-        return SuccessHandler.success(res, CommonError.Success, user);
+        return ResponseHandler.success(res, user);
     } catch (error) {
-        SuccessHandler.error(res);
+        console.log(error);
+        ResponseHandler.error(res);
     }
 }
 

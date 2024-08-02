@@ -8,7 +8,6 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
     },
     password: {
         type: String,
@@ -22,7 +21,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false
     },
-    phoneNumber: { type: String, required: true, unique: true }
+    phoneNumber: {
+        type: String, required: true,
+    }
     ,
     createdAt: {
         type: Date,

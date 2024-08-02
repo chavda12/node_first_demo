@@ -1,8 +1,8 @@
 const  CommonError = require("./error")
 
 const SuccessHandler = {
-    success: (res, status, data) => {
-        return res.status(status ||  CommonError.Success).json({
+    success: (res, data,status) => {
+        return res.status(status ||  200).json({
             success: true,
             data: data || "successful",
         });
