@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express();
-const LoggerMiddleware = require('./middleware/logger_text');
-const UserRouter = require("./router/user_router");
-const AuthRouter = require("./router/auth_router");
-const { connectToMongoDB } = require('./connect')
+const LoggerMiddleware = require('../src/middleware/logger_text');
+const UserRouter = require("../src/router/user_router");
+const AuthRouter = require("../src/router/auth_router");
+const { connectToMongoDB } = require('../src/db/connect')
 const dotenv = require('dotenv');
 dotenv.config();
 const PORT = process.env.PORT;

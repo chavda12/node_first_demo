@@ -1,9 +1,9 @@
 const { default: mongoose } = require("mongoose");
-const RestAPI = require("../axios");
+const RestAPI = require("../utils/axios");
 const User = require("../model/user_model");
 const { generateUsername } = require("unique-username-generator");
-const ResponseHandler = require('../response_handler');
-const CommonError = require('../error');
+const ResponseHandler = require('../utils/response_handler');
+const CommonError = require('../utils/error');
 
 
 
@@ -16,7 +16,7 @@ const GetAllUser = async (req, res, _) => {
         }));
         return ResponseHandler.success(res, data);
     } catch (error) {
-        ResponseHandler.error(res);
+        ResponseHandler.error({ res, errorMessage: error });
     }
 };
 
@@ -26,7 +26,7 @@ const UpdateUser = async (req, res, next) => {
         RestAPI.get(url);
         return ResponseHandler.success(res, { "name": "varsha", "email": "123@gmail.com", "password": "123456" });
     } catch (error) {
-        ResponseHandler.error(res);
+        ResponseHandler.error({ res, errorMessage: error });
     }
 };
 
@@ -45,7 +45,9 @@ const RandomUserAdded = async (req, res) => {
         }
         return ResponseHandler.success(res, { "Success": true });
     } catch (error) {
-        ResponseHandler.error(res);
+        ResponseHandler.error({
+            res, errorMessage: error
+        });
     }
 }
 
@@ -61,7 +63,7 @@ const GetQueryBasedField = async (req, res) => {
         });
         return ResponseHandler.success(res, { "data": modifiedData });
     } catch (error) {
-        ResponseHandler.error();
+        ResponseHandler.error({ errorMessage: error });
     }
 }
 
@@ -71,7 +73,7 @@ const GetParticularUserData = async (req, res) => {
         console.log(data.toObject());
         return ResponseHandler.success(res, data);
     } catch (error) {
-        ResponseHandler.error();
+        ResponseHandler.error({ errorMessage: error });
     }
 }
 
@@ -83,7 +85,7 @@ const UpdateParticularUserData = async (req, res) => {
         console.log(response);
         return ResponseHandler.success(res, response);
     } catch (error) {
-        ResponseHandler.error();
+        ResponseHandler.error({ errorMessage: error });
     }
 }
 
@@ -93,6 +95,8 @@ const AddUsers = async (req, res) => {
 
         const validUsers = [];
         const invalidUsers = [];
+        const updatedUserList = [];
+        const notUpdatedUserList = [];
 
         users.forEach(user => {
             const { name, email, password, phoneNumber } = user;
@@ -113,31 +117,44 @@ const AddUsers = async (req, res) => {
                 }
             }));
             const result = await User.bulkWrite(userUpdate);
+            if ((result.upsertedCount + result.modifiedCount) == validUsers.length) {
+                updatedUserList.push(...validUsers);
+            }
         }
 
         if (invalidUsers.length > 0) {
 
-        invalidUsers.forEach(async user => {
-            if (user.email) {
-                try {
-                    const result = await User.updateOne(
-                        { email: user.email },
-                        { $set: user }
-                    );
-                    console.log('Invalid user updated:', result);
-                } catch (error) {
-                    console.error('Error updating invalid user:', error);
+            invalidUsers.forEach(async user => {
+                if (user.email) {
+                    try {
+                        const result = await User.updateOne(
+                            { email: user.email },
+                            { $set: user }
+                        );
+                        if (result.modifiedCount.length > 0) {
+                            updatedUserList.push(user);
+                        }
+                        else {
+                            notUpdatedUserList.push(user);
+                        }
+
+                        console.log('Invalid user updated:', result);
+                    } catch (error) {
+                        console.error('Error updating invalid user:', error);
+                    }
                 }
-            }
-        });
-    }
+                else {
+                    notUpdatedUserList.push(user);
+                }
+            });
+        }
         return ResponseHandler.success(res, {
-            addedOrUpdatedUsers: validUsers,
-            invalidUsers: invalidUsers,
+            addedOrUpdatedUsers: updatedUserList,
+            invalidUsers: notUpdatedUserList,
         });
     } catch (error) {
         console.error('Error adding users:', error);
-        return ResponseHandler.error(res, 'Failed to add users', CommonError.Internal_Server_Error);
+        return ResponseHandler.error({ res, message: 'Failed to add users', status: CommonError.Internal_Server_Error, errorMessage: error });
 
 
     }

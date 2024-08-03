@@ -4,7 +4,6 @@ const router = express.Router();
 
     router.post('/', UserController.GetAllUser),
     router.post('/addUsers', UserController.AddUsers),
-
     router.post('/randomUserAdded', UserController.RandomUserAdded),
     router.post('/getQueryBasedField', UserController.GetQueryBasedField),
     router.route('/:id').get(UserController.GetParticularUserData).put(UserController.UpdateParticularUserData),
